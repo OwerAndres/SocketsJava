@@ -6,45 +6,59 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 import java.net.*;
 
 public class Conexion {
 
-	public static void main(String[] args) {
-		try {
-			/**Numero del puerto en el que estara escuchando**/
-			ServerSocket server = new ServerSocket(5555);
-			System.out.println("Servidor iniciado en el puerto 5555");
-			
-			/**Esperar a que un cliente se conecte*/
-			Socket clientSocket = server.accept();
-			System.out.println("Cliente conectado: "+server.getInetAddress().getHostAddress());
-			
-			/**Abrir los flujos de entrada y salida para enviar y recibir datos**/
-			InputStream intput = clientSocket.getInputStream();
-			OutputStream output = clientSocket.getOutputStream();
-			
-			/**Recibir y enviar mensajes**/
-			BufferedReader reader = new BufferedReader(new InputStreamReader(intput));
-			PrintWriter writer = new PrintWriter(output, true);
-			
-			/**Lee un mensaje del cleinte**/
-			String mensajeCliente = reader.readLine();
-			System.out.println("Mensaje del cleinte: "+mensajeCliente);
-			
-			/**Enviar respuesta al cliente**/
-			writer.println("Mensaje recibido");
-			
-			
-			/**Cerrar los puertos despues de la comunicacion**/
-			server.close();
-			clientSocket.close();
-			
+	private static final int PORT = 5555;
+	/**Variable del numero de clientes que esperara el servidor**/
+	private static final int NUM_CLIENTES = 2; 
+
+	public void iniciarServidor() {
+		List<Socket> clientes = new ArrayList<>();
+
+		try (ServerSocket server = new ServerSocket(PORT)) {
+			System.out.println("Servidor iniciado en el puerto " + PORT);
+
+			/**El bucle continuara hasta que se hallan conectado 2 clientes**/
+			while (clientes.size() < NUM_CLIENTES) {
+				System.out.println("Esperando conexión de cliente " + (clientes.size() + 1) + "...");
+				Socket clientSocket = server.accept();
+				clientes.add(clientSocket);
+				System.out.println("Cliente conectado: " + clientSocket.getInetAddress().getHostAddress());
+			}
+
+			System.out.println("Se han conectado " + NUM_CLIENTES + " clientes. Iniciando comunicación...");
+
+			/**Recorrer la lista de clientes e iniciar la comunicacion con cada uno**/
+			for (Socket clientSocket : clientes) {
+				InputStream input = clientSocket.getInputStream();
+				OutputStream output = clientSocket.getOutputStream();
+
+				BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+				PrintWriter writer = new PrintWriter(output, true);
+
+				/**Leer el mensaje de cada cliente**/
+				String mensajeCliente = reader.readLine();
+				System.out.println("Mensaje del cliente " + clientSocket.getInetAddress().getHostAddress() + ": "
+						+ mensajeCliente);
+
+				writer.println("Mensaje recibido del servidor");
+			}
+
+			for (Socket clientSocket : clientes) {
+				clientSocket.close();
+			}
+
+			System.out.println("Conexión con los clientes finalizada.");
+
 		} catch (IOException e) {
-			System.out.println("A ocurrido un error: "+e.getMessage());
+			System.out.println("Ha ocurrido un error: " + e.getMessage());
 			e.printStackTrace();
-		} 
+		}
 	}
 
 }
