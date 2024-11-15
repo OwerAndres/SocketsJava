@@ -44,7 +44,7 @@ public class JDBCconnection {
 			 * obtenemos cuantos puntos y id de jugador tiene cada uno al inicio de cada
 			 * ronda y la conexion
 			 ***/
-			String points = "select puntosj1,puntosj2,jugador1,jugador2 from partidasm where idpartida like ?";
+			String points = "select puntosj1,puntosj2,jugador1,jugador2 from partidasm where id_partida like ?;";
 			try (Connection conn = DriverManager.getConnection(url, user, password);) {
 				PreparedStatement consultap = conn.prepareStatement(points);
 				consultap.setInt(1, idpartida);
@@ -80,22 +80,22 @@ public class JDBCconnection {
 				 * ha marcado (aka el que se actualiza)
 				 **/
 				if (p1 >= 3) {
-					String quaery = "update partidasm set ganador = jugador1" + "where ID_PARTIDA=?";
+					String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR1 LIMIT 1) where ID_PARTIDA=?;";
 					PreparedStatement pstmt = conn.prepareStatement(quaery);
 					pstmt.setInt(1, idpartida);
 					pstmt.executeUpdate();
-					ActualizarPerfil(j1);
+					ActualizarPerfil(j1, indicador);
 					pstmt.close();
 
 				} else if (p2 >= 3) {
-					String quaery = "update partidasm set ganador = jugador2" + "where ID_PARTIDA=?";
+					String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR2 LIMIT 1) where ID_PARTIDA=?;";
 					PreparedStatement pstmt = conn.prepareStatement(quaery);
 					pstmt.setInt(1, idpartida);
 					pstmt.executeUpdate();
-					ActualizarPerfil(j2);
+					ActualizarPerfil(j2, indicador);
 					pstmt.close();
 				} else {
-					String quaery = "update partidasm set ? =" + (i + 1) + "where ID_PARTIDA=?";
+					String quaery = "update partidasm set ? =" + (i + 1) + "where ID_PARTIDA=?;";
 					PreparedStatement pstmt = conn.prepareStatement(quaery);
 					pstmt.setString(1, puntuaje);
 					pstmt.setInt(2, idpartida);
@@ -111,7 +111,7 @@ public class JDBCconnection {
 			 * cuando el jugador juega contra la maquina, obtenemos los puntos de la maquina
 			 * y el jugador y la id del jugador
 			 ***/
-			String pointss = "select puntosj1,puntosmaquina,jugador1 from partidass where idpartida like ?";
+			String pointss = "select puntosj1,puntosmaquina,jugador1 from partidass where idpartida like ?;";
 			try (Connection conn = DriverManager.getConnection(url, user, password);) {
 				PreparedStatement consultap = conn.prepareStatement(pointss);
 				consultap.setInt(1, idpartida);
@@ -141,21 +141,21 @@ public class JDBCconnection {
 				 * si el jugador uno tiene 3 le pone como ganador, si la maquina tiene 3 le pone
 				 * a el de ganador sino sumara un punto al jugador que sea que ha marcado
 				 **/
-				if (p1 <= 3) {
-					String quaery = "update partidass set ganador = jugador1" + "where ID_PARTIDA=?";
+				if (p1 >= 3) {
+					String quaery = "UPDATE partidass SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASS.JUGADOR1 LIMIT 1) where ID_PARTIDA=?;";
 					PreparedStatement pstmt = conn.prepareStatement(quaery);
 					pstmt.setInt(1, idpartida);
 					pstmt.executeUpdate();
-					ActualizarPerfil(j1);
+					ActualizarPerfil(j1, indicador);
 					pstmt.close();
 
-				} else if (pmaquina <= 3) {
-					String quaery = "update partidass set ganador = maquina" + "where ID_PARTIDA=?";
+				} else if (pmaquina >= 3) {
+					String quaery = "update partidass set ganador = maquina where ID_PARTIDA=?;";
 					PreparedStatement pstmt = conn.prepareStatement(quaery);
 					pstmt.setInt(1, idpartida);
 					pstmt.executeUpdate();
 				} else {
-					String quaerys = "update partidass set ? =" + (i + 1) + "where ID_PARTIDA=?";
+					String quaerys = "update partidass set ? =" + (i + 1) + "where ID_PARTIDA=?;";
 					PreparedStatement pstmt = conn.prepareStatement(quaerys);
 					pstmt.setString(1, puntuaje);
 					pstmt.setInt(2, idpartida);
@@ -167,38 +167,90 @@ public class JDBCconnection {
 		}
 	}
 
-	public static void ActualizarPerfil(int id_jugador) throws SQLException {
+	public static void ActualizarPerfil(int id_jugador, int indicador) throws SQLException {
 
 		/**
 		 * primero obtenemos la conexion y el valor de las partidas ganadas que ya tenia
 		 * el usuario
 		 ***/
-		String quaeryconsulta = "select PG from usuarios where id like ?";
+		String quaeryconsulta = "select PG_multijugador,PG_maquina from JUGADORES where id like ?";
 		try (Connection conn = DriverManager.getConnection(url, user, password);) {
 			PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta);
 			pstmt.setInt(1, id_jugador);
 			pstmt.executeUpdate();
 			ResultSet rs = pstmt.executeQuery();
-			int partidasGanadas = rs.getInt("PG");
+			int partidasGanadasmulti = rs.getInt("PG_multijugador");
+			int partidasGanadasmaquina = rs.getInt("PG_multijugador");
 			pstmt.close();
 
-			/***
-			 * una vez que tenemos el valor antes de modificacion hacemos la consulta de
-			 * modificacion, y le sumamos una mas a la spartidas ganadas
-			 ****/
-			String quaeryactualizar = "update usuarios set PG =" + (partidasGanadas + 1) + "where id like ?";
-			PreparedStatement pstmt2 = conn.prepareStatement(quaeryactualizar);
-			pstmt2.setInt(1, id_jugador);
-			pstmt2.executeUpdate();
-			pstmt2.close();
+			switch (indicador) {
+			case 1:
+				/***
+				 * una vez que tenemos el valor antes de modificacion hacemos la consulta de
+				 * modificacion, y le sumamos una mas a la spartidas ganadas
+				 ****/
+				String quaeryactualizarpartidasmulti = "update JUGADORES set PG_multijugador ="
+						+ (partidasGanadasmulti + 1) + "where id like ?";
+				PreparedStatement pstmt2 = conn.prepareStatement(quaeryactualizarpartidasmulti);
+				pstmt2.setInt(1, id_jugador);
+				pstmt2.executeUpdate();
+				pstmt2.close();
+				break;
+			case 2:
+				String quaeryactualizarpartidasmaquina = "update JUGADORES set PG_maquina ="
+						+ (partidasGanadasmaquina + 1) + "where id like ?";
+				PreparedStatement pstmt3 = conn.prepareStatement(quaeryactualizarpartidasmaquina);
+				pstmt3.setInt(1, id_jugador);
+				pstmt3.executeUpdate();
+				pstmt3.close();
+				break;
+			}
+
 		}
 	}
 
-	public static void MostrarPerfil() {
+	public static void MostrarInfo(int indicador) throws SQLException {
+
+		switch (indicador) {
+		case 1:
+			String quaeryconsulta1 = "select * from JUGADORES,partidasm";
+			try (Connection conn = DriverManager.getConnection(url, user, password);) {
+				PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta1);
+				ResultSet rs = pstmt.executeQuery();
+				System.out.println(
+						String.format("%-10s %-50s %-50s %-50s %-50s %-20s %-50s  %-50s  %-10s  %-10s %-50s %-50s",
+								"id", "usuarios", "contraseña", "PG_multijugador", "PG_maquina", "ID_PARTIDA",
+								"id_JUGADOR1", "id_JUGADOR2", "PUNTOSJ1", "PUNTOSJ2", "GANADOR", "FECHA"));
+				System.out.println(
+						"---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+
+				while (rs.next()) {
+					System.out.println(
+							String.format("%-10s %-50s %-50s %-50s %-50s %-20s %-50s  %-50s  %-10s  %-10s %-50s %-50s",
+									rs.getInt("id"), rs.getString("usuarios"), rs.getString("contraseña"),
+									rs.getInt("PG_multijugador"), rs.getInt("PG_maquina"), rs.getInt("ID_PARTIDA"),
+									rs.getInt("id_JUGADOR1"), rs.getInt("id_JUGADOR2"), rs.getInt("PUNTOSJ1"),
+									rs.getInt("PUNTOSJ2"), rs.getString("GANADOR"), rs.getDate("FECHA")));
+				}
+
+			}
+			break;
+		case 2:
+			String quaeryconsulta2 = "select * from JUGADORES,partidass";
+			try (Connection conn = DriverManager.getConnection(url, user, password);) {
+				PreparedStatement pstmt2 = conn.prepareStatement(quaeryconsulta2);
+				ResultSet rs = pstmt2.executeQuery();
+			}
+			break;
+		}
 
 	}
 
-	public static void MostrarPartida() {
+	public static void BuscarUsuario(int id) {
+
+	}
+
+	public static void MostrarPartida(int indicador, int id_partida) {
 
 	}
 }
