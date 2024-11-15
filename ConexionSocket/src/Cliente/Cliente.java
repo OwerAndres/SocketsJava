@@ -5,29 +5,29 @@ import java.net.*;
 
 public class Cliente {
 
-	public static void main(String[] args) {
-		try {
-			/** localhost para conectar al mismo puerto 5555 **/
-			Socket socket = new Socket("localhost", 5555);
-			System.out.println("Conectado al servidor en el puerto 5555");
+    public static void main(String[] args) {
+        try (Socket socket = new Socket("172.16.41.122", 5555);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader consola = new BufferedReader(new InputStreamReader(System.in))) {
 
-			/** abrir flujos de entrada y salida para enviar los datos **/
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+            System.out.println("Conectado al servidor.");
 
-			/** Enviar y recibir mensaje **/
-			writer.println("Hola desde el cliente");
+            while (true) {
+                /**Leer mensaje del servidor **/
+                String mensajeServidor = reader.readLine();
+                System.out.println(mensajeServidor);
 
-			String respuestaServer = reader.readLine();
-			System.out.println("Respuesta del servidor: " + respuestaServer);
+                /**cuando el servidor este esperando una entrada permitira el envio del mensaje **/
+                if (mensajeServidor.contains("escribe un mensaje")) {
+                    String mensajeCliente = consola.readLine();
+                    writer.println(mensajeCliente);
+                }
+            }
 
-			socket.close();
-
-		} catch (IOException e) {
-			System.out.println("A ocurrido un error: " + e.getMessage());
-			e.printStackTrace();
-		}
-
-	}
-
+        } catch (IOException e) {
+            System.out.println("Error en el cliente: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
