@@ -238,19 +238,92 @@ public class JDBCconnection {
 		case 2:
 			String quaeryconsulta2 = "select * from JUGADORES,partidass";
 			try (Connection conn = DriverManager.getConnection(url, user, password);) {
-				PreparedStatement pstmt2 = conn.prepareStatement(quaeryconsulta2);
-				ResultSet rs = pstmt2.executeQuery();
+				PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta2);
+				ResultSet rs = pstmt.executeQuery();
+				System.out.println(
+						String.format("%-10s %-50s %-50s %-50s %-50s %-20s %-50s  %-50s  %-10s  %-10s %-50s %-50s",
+								"id", "usuarios", "contraseña", "PG_multijugador", "PG_maquina", "ID_PARTIDA",
+								"id_JUGADOR1", "id_JUGADOR2", "PUNTOSJ1", "PUNTOSJ2", "GANADOR", "FECHA"));
+				System.out.println(
+						"---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+
+				while (rs.next()) {
+					System.out.println(
+							String.format("%-10s %-50s %-50s %-50s %-50s %-20s %-50s  %-50s  %-10s  %-10s %-50s %-50s",
+									rs.getInt("id"), rs.getString("usuarios"), rs.getString("contraseña"),
+									rs.getInt("PG_multijugador"), rs.getInt("PG_maquina"), rs.getInt("ID_PARTIDA"),
+									rs.getInt("id_JUGADOR1"), rs.getInt("id_JUGADOR2"), rs.getInt("PUNTOSJ1"),
+									rs.getInt("PUNTOSJ2"), rs.getString("GANADOR"), rs.getDate("FECHA")));
+				}
+
 			}
 			break;
 		}
 
 	}
 
-	public static void BuscarUsuario(int id) {
+	public static void BuscarUsuario(int id) throws SQLException {
+		String quaeryconsulta = "select * from JUGADORES where id = ?";
+		try (Connection conn = DriverManager.getConnection(url, user, password);) {
+			PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta);
+			pstmt.setInt(1, id);
+			ResultSet rs = pstmt.executeQuery();
+			System.out.println(String.format("%-10s %-50s %-50s %-50s %-50s", "id", "usuarios", "contraseña",
+					"PG_multijugador", "PG_maquina"));
+			System.out.println(
+					"---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
+			while (rs.next()) {
+				System.out.println(
+						String.format("%-10s %-50s %-50s %-50s %-50s", rs.getInt("id"), rs.getString("usuarios"),
+								rs.getString("contraseña"), rs.getInt("PG_multijugador"), rs.getInt("PG_maquina")));
+			}
+
+		}
 	}
 
-	public static void MostrarPartida(int indicador, int id_partida) {
+	public static void MostrarPartida(int indicador, int id_partida) throws SQLException {
+		switch (indicador) {
+		case 1:
+			String quaeryconsulta1 = "select * from partidasm where id_partida = ?";
+			try (Connection conn = DriverManager.getConnection(url, user, password);) {
+				PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta1);
+				pstmt.setInt(1, id_partida);
+				ResultSet rs = pstmt.executeQuery();
+				System.out.println(String.format("%-20s %-20s  %-20s  %-50s  %-50s %-50s %-50s", "ID_PARTIDA",
+						"JUGADOR1", "PUNTOSJ1", "PUNTOSMAQUINA", "GANADOR", "FECHA"));
+				System.out.println(
+						"---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
+				while (rs.next()) {
+					System.out.println(
+							String.format("%-20s %-20s  %-20s  %-50s  %-50s %-50s %-50s", rs.getInt("ID_PARTIDA"),
+									rs.getInt("id_JUGADOR1"), rs.getInt("id_JUGADOR2"), rs.getInt("PUNTOSJ1"),
+									rs.getInt("PUNTOSJ2"), rs.getString("GANADOR"), rs.getDate("FECHA")));
+				}
+
+			}
+			break;
+		case 2:
+			String quaeryconsulta2 = "select * from partidass where id_partida = ?";
+			try (Connection conn = DriverManager.getConnection(url, user, password);) {
+				PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta2);
+				pstmt.setInt(1, id_partida);
+				ResultSet rs = pstmt.executeQuery();
+				System.out.println(String.format("%-20s %-20s  %-20s  %-50s  %-50s %-50s %-50s", "ID_PARTIDA",
+						"JUGADOR1", "PUNTOSJ1", "PUNTOSMAQUINA", "GANADOR", "FECHA"));
+				System.out.println(
+						"---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+
+				while (rs.next()) {
+					System.out.println(
+							String.format("%-20s %-20s  %-20s  %-50s  %-50s %-50s %-50s", rs.getInt("ID_PARTIDA"),
+									rs.getInt("id_JUGADOR1"), rs.getInt("id_JUGADOR2"), rs.getInt("PUNTOSJ1"),
+									rs.getInt("PUNTOSJ2"), rs.getString("GANADOR"), rs.getDate("FECHA")));
+				}
+
+			}
+			break;
+		}
 	}
 }
