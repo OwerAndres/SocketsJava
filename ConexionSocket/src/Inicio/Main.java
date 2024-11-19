@@ -21,8 +21,8 @@ public class Main {
 	                conexion.iniciarServidor();
 	                break;
 	            case 2:
-	                System.out.println("Modo contra la máquina seleccionado. (Aquí se puede implementar la lógica para jugar contra la máquina)");
-	                /**Codigo o llamada del metodo para juagr contra la maquina**/
+	                System.out.println("Modo contra la máquina seleccionado");
+	                /**Codigo metodo para juagr contra la maquina**/
 	                break;
 	            default:
 	                System.out.println("Opción no válida. Por favor, selecciona 1 o 2.");
