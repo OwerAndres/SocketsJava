@@ -7,7 +7,7 @@ public class Cliente {
 	public static void main(String[] args) {
 		try {
 			/**localhost para conectar al mismo puerto 5555**/
-			Socket socket = new Socket("localhost",5555);
+			Socket socket = new Socket("172.16.40.203",5555);
 			System.out.println("Conectado al servidor en el puerto 5555");
 			
 			/**abrir flujos de entrada y salida para enviar los datos**/

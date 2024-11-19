@@ -1,10 +1,13 @@
 package basedatos;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class JDBCconnection {
 
@@ -341,23 +344,23 @@ public class JDBCconnection {
 
 	public static void MostrarUsuario() throws SQLException {
 		/***
-		 *preparamos la consulta select**
+		 * preparamos la consulta select**
 		 **/
 		String quaeryconsulta = "select * from JUGADORES;";
-		/**hacdemos la conexion con la base de datos***/
+		/** hacdemos la conexion con la base de datos ***/
 		try (Connection conn = DriverManager.getConnection(url, user, password);) {
 			PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta);
-			
-			/***ejecutamos la consulta y guardamos sus resultados en un resulset***/
+
+			/*** ejecutamos la consulta y guardamos sus resultados en un resulset ***/
 			ResultSet rs = pstmt.executeQuery();
-			
-			/***les damos un formato***/
+
+			/*** les damos un formato ***/
 			System.out.println(String.format("%-10s %-50s %-50s %-50s %-50s", "id", "usuarios", "contraseña",
 					"PG_multijugador", "PG_maquina"));
 			System.out.println(
 					"---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
-			/***mientras haya filas que imprimir se imprimen***/
+			/*** mientras haya filas que imprimir se imprimen ***/
 			while (rs.next()) {
 				System.out.println(
 						String.format("%-10s %-50s %-50s %-50s %-50s", rs.getInt("id"), rs.getString("usuarios"),
@@ -369,30 +372,32 @@ public class JDBCconnection {
 
 	public static void MostrarPartida(int indicador) throws SQLException {
 		/**
-		 * segun el indicador de si esta partida a buscar ha sido multijugador(1) o single-player(2) hacemos una cosa o otra con el switch
+		 * segun el indicador de si esta partida a buscar ha sido multijugador(1) o
+		 * single-player(2) hacemos una cosa o otra con el switch
 		 ***/
 		switch (indicador) {
 		case 1:
 
 			/**
-			 * si es multijugador primero preparamos la consulta donde te enseña todos los datos
+			 * si es multijugador primero preparamos la consulta donde te enseña todos los
+			 * datos
 			 ***/
 			String quaeryconsulta1 = "select * from partidasm;";
 
 			/*** hacemos la conexion **/
 			try (Connection conn = DriverManager.getConnection(url, user, password);) {
 				PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta1);
-				
-				/***ejecutamos la consulta y guardamos los resultados**/
+
+				/*** ejecutamos la consulta y guardamos los resultados **/
 				ResultSet rs = pstmt.executeQuery();
-				
+
 				/**** dejamos un formato ****/
 				System.out.println(String.format("%-20s %-20s  %-20s  %-50s  %-50s %-50s %-50s", "ID_PARTIDA",
 						"JUGADOR1", "JUGADOR2", "PUNTOSJ1", "PUNTOSJ2", "GANADOR", "FECHA"));
 				System.out.println(
 						"---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
-				/*** imprimimos la info mientras haya filas a imprimir***/
+				/*** imprimimos la info mientras haya filas a imprimir ***/
 				while (rs.next()) {
 					System.out.println(
 							String.format("%-20s %-20s  %-20s  %-50s  %-50s %-50s %-50s", rs.getInt("ID_PARTIDA"),
@@ -404,23 +409,24 @@ public class JDBCconnection {
 			break;
 		case 2:
 			/**
-			 * si es contra la maquina(single player) preparamos la consulta donde te muestra todos los datos
+			 * si es contra la maquina(single player) preparamos la consulta donde te
+			 * muestra todos los datos
 			 ***/
 			String quaeryconsulta2 = "select * from partidass;";
-			
+
 			/*** hacemos la conexion **/
 			try (Connection conn = DriverManager.getConnection(url, user, password);) {
 				PreparedStatement pstmt = conn.prepareStatement(quaeryconsulta2);
-				
-				/***ejecutamos la consulta y guardamos sus resultados en un resultset***/
+
+				/*** ejecutamos la consulta y guardamos sus resultados en un resultset ***/
 				ResultSet rs = pstmt.executeQuery();
-				
+
 				/**** le damos un formato ****/
 				System.out.println(String.format("%-20s %-20s  %-20s  %-50s  %-50s %-50s %-50s", "ID_PARTIDA",
 						"JUGADOR1", "PUNTOSJ1", "PUNTOSMAQUINA", "GANADOR", "FECHA"));
 				System.out.println(
 						"---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-				/*** imprimimos la info siempre y cuando haya filas que imprimir***/
+				/*** imprimimos la info siempre y cuando haya filas que imprimir ***/
 				while (rs.next()) {
 					System.out.println(String.format("%-20s %-20s  %-20s  %-50s  %-50s %-50s %-50s",
 							rs.getInt("ID_PARTIDA"), rs.getInt("JUGADOR1"), rs.getInt("PUNTOSJ1"),
@@ -429,6 +435,120 @@ public class JDBCconnection {
 
 			}
 			break;
+		}
+	}
+
+	public static void CrearUsuario(String usuario, String contraseña) throws SQLException {
+
+		/**
+		 * preparamos la consulta donde como el primary key es auto increment solo
+		 * necesitamos meterle los datos de usuario y contraseña y le inicializamos lo
+		 * demas a 0 para evitar posibles errores de compilación
+		 ***/
+		String quaery = "insert into JUGADORES (USUARIOS,CONTRASEÑA,PG_multijugador,PG_maquina) VALUES ('?','?',0,0);";
+		/*** hacemos la conexion con la base de datos **/
+		try (Connection conn = DriverManager.getConnection(url, user, password);) {
+			PreparedStatement pstmt = conn.prepareStatement(quaery);
+			pstmt.setString(1, usuario);
+			pstmt.setString(2, contraseña);
+			/*** ejecutamos la consulta ***/
+			pstmt.executeUpdate();
+
+		}
+	}
+
+	public static void CrearPartida(int indicador, String nombre1, String nombre2) throws SQLException {
+
+		/***
+		 * preparamos ua consulta en la que por el campo del usuario vamos a obtener las
+		 * id de cada jugador
+		 ***/
+		String obtenerid = "select j1.id,j2.id from jugadores as j1 inner join jugadores as j2 on j2.usuarios like '?' where j1.USUARIOS like '?';";
+
+		/*** hacemos la conexion ***/
+		try (Connection conn = DriverManager.getConnection(url, user, password);) {
+
+			/** hacemos el statement y rellenamos las inconitas ***/
+			PreparedStatement pstmt = conn.prepareStatement(obtenerid);
+			pstmt.setString(1, nombre2);
+			pstmt.setString(2, nombre1);
+
+			/*** ejecutamos la consulta y almacenamos su resultado en un resulset ***/
+			ResultSet rs = pstmt.executeQuery();
+
+			/**** guardamos los valores de la id de cada jugador ****/
+			int id1 = rs.getInt("j1id");
+			int id2 = rs.getInt("j2id");
+
+			/*** cerramos los recursos ***/
+			pstmt.close();
+			rs.close();
+
+			/****
+			 * segun si debe crear una partida en multiplayer(1) o singleplayer(2) te hace
+			 * casos diferentes que esto se indica cual mediante el indicador
+			 *****/
+			switch (indicador) {
+			case 1:
+
+				/*** obtenemos la fecha del sistema de cuando se llama el metodo ***/
+				LocalDate fechaHoy = LocalDate.now();
+
+				/***
+				 * Convertimos el LocalDate en un LocalDateTime con la hora fijada a las
+				 * 00:00:00 (inicio del día) en la zona horaria predeterminada del sistema.
+				 * luego Convierto con el instant el LocalDateTime a un Instant, y luego ya de
+				 * este a un date
+				 ***/
+				Date date = (Date) Date.from(fechaHoy.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+				/** preparamos la queray de creación de la partida de multijugador ****/
+				String quaery1 = "insert into partidasm (JUGADOR1,JUGADOR2,PUNTOSJ1,PUNTOSJ2,FECHA) VALUES (?,?,0,0,?);";
+
+				PreparedStatement pstmt1 = conn.prepareStatement(quaery1);
+
+				/*** rellenamos las inconitas ***/
+				pstmt1.setInt(1, id1);
+				pstmt1.setInt(2, id2);
+				pstmt1.setDate(3, date);
+
+				/** ejecutamos la consulta de creacion de partida multijugador **/
+				pstmt1.executeUpdate();
+
+				/*** cerramos recursos ****/
+				pstmt1.close();
+
+				break;
+
+			case 2:
+				/*** obtenemos la fecha del sistema de cuando se llama el metodo ***/
+				LocalDate fechaHoy2 = LocalDate.now();
+
+				/***
+				 * Convertimos el LocalDate en un LocalDateTime con la hora fijada a las
+				 * 00:00:00 (inicio del día) en la zona horaria predeterminada del sistema.
+				 * luego Convierto con el instant el LocalDateTime a un Instant, y luego ya de
+				 * este a un date
+				 ***/
+				Date date2 = (Date) Date.from(fechaHoy2.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+				/** preparamos la queray de creación de la partida de singleplayer****/
+				String quaery2 = "insert into partidass (JUGADOR1,PUNTOSJ1,PUNTOSMAQUINA,FECHA) VALUES (?,0,0,?);";
+
+				PreparedStatement pstmt2 = conn.prepareStatement(quaery2);
+
+				/*** rellenamos las inconitas ***/
+				pstmt2.setInt(1, id1);
+				pstmt2.setDate(2, date2);
+
+				/** ejecutamos la consulta de creacion de partida multijugador **/
+				pstmt2.executeUpdate();
+
+				/*** cerramos recursos ****/
+				pstmt2.close();
+				break;
+			}
+
 		}
 	}
 }
