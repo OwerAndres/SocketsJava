@@ -150,6 +150,9 @@ public class JDBCconnection {
 					/*** cerramos recursos ****/
 					pstmt.close();
 				}
+			}catch(Exception e) {
+				/***en caso de que algo vaya mal nos imprime el error****/
+				e.printStackTrace();
 			}
 
 			break;
@@ -262,6 +265,9 @@ public class JDBCconnection {
 					/*** cerramos recursos ***/
 					pstmt.close();
 				}
+			}catch(Exception e) {
+				/***en caso de que algo vaya mal nos imprime el error****/
+				e.printStackTrace();
 			}
 			break;
 		}
@@ -339,6 +345,9 @@ public class JDBCconnection {
 				break;
 			}
 			/** cerramos switch **/
+		}catch(Exception e) {
+			/***en caso de que algo vaya mal nos imprime el error****/
+			e.printStackTrace();
 		}
 	}
 
@@ -367,6 +376,9 @@ public class JDBCconnection {
 								rs.getString("contraseña"), rs.getInt("PG_multijugador"), rs.getInt("PG_maquina")));
 			}
 
+		}catch(Exception e) {
+			/***en caso de que algo vaya mal nos imprime el error****/
+			e.printStackTrace();
 		}
 	}
 
@@ -405,6 +417,9 @@ public class JDBCconnection {
 									rs.getInt("PUNTOSJ2"), rs.getString("GANADOR"), rs.getDate("FECHA")));
 				}
 
+			}catch(Exception e) {
+				/***en caso de que algo vaya mal nos imprime el error****/
+				e.printStackTrace();
 			}
 			break;
 		case 2:
@@ -433,6 +448,9 @@ public class JDBCconnection {
 							rs.getInt("PUNTOSMAQUINA"), rs.getString("GANADOR"), rs.getDate("FECHA")));
 				}
 
+			}catch(Exception e) {
+				/***en caso de que algo vaya mal nos imprime el error****/
+				e.printStackTrace();
 			}
 			break;
 		}
@@ -454,6 +472,9 @@ public class JDBCconnection {
 			/*** ejecutamos la consulta ***/
 			pstmt.executeUpdate();
 
+		}catch(Exception e) {
+			/***en caso de que algo vaya mal nos imprime el error****/
+			e.printStackTrace();
 		}
 	}
 
@@ -549,6 +570,9 @@ public class JDBCconnection {
 				break;
 			}
 
+		}catch(Exception e) {
+			/***en caso de que algo vaya mal nos imprime el error****/
+			e.printStackTrace();
 		}
 	}
 }
