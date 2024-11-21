@@ -100,7 +100,7 @@ public class JDBCconnection {
 						 * actualizamos la tabla de partidas multijugador y mediante un inner join
 						 * obtenemos el usuario del jugador ganador y lo ponemos en ganador
 						 **/
-						String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR1 LIMIT 1) where ID_PARTIDA= ?;";
+						String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR1 LIMIT 1) where ID_PARTIDA = ?;";
 						PreparedStatement pstmt = conn.prepareStatement(quaery);
 						pstmt.setInt(1, idpartida);
 
@@ -122,7 +122,7 @@ public class JDBCconnection {
 						 * actualizamos la tabla de partidas multijugador y mediante un inner join
 						 * obtenemos el usuario del jugador ganador y lo ponemos en ganador
 						 **/
-						String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR2 LIMIT 1) where ID_PARTIDA= ?;";
+						String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR2 LIMIT 1) where ID_PARTIDA = ?;";
 						PreparedStatement pstmt = conn.prepareStatement(quaery);
 						pstmt.setInt(1, idpartida);
 						/*** ejectuamos la consulta ***/
@@ -141,7 +141,7 @@ public class JDBCconnection {
 						 * hacdemos la consulta donde le sumamos a i(el contador de puntos del que ha
 						 * marcado) uno más
 						 ***/
-						String quaery = "update partidasm set " + puntuaje + "=? where ID_PARTIDA= ?;";
+						String quaery = "update partidasm set " + puntuaje + "=? where ID_PARTIDA = ?;";
 						PreparedStatement pstmt = conn.prepareStatement(quaery);
 						
 						/** le ponemos el valor de las inconitas ***/
@@ -224,7 +224,7 @@ public class JDBCconnection {
 						 * actualizamos la tabla de partidas single-player y ponemos al jugador1 como
 						 * ganador
 						 ***/
-						String quaery = "UPDATE partidass SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASS.JUGADOR1 LIMIT 1) where ID_PARTIDA= ?;";
+						String quaery = "UPDATE partidass SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASS.JUGADOR1 LIMIT 1) where ID_PARTIDA = ?;";
 						PreparedStatement pstmt = conn.prepareStatement(quaery);
 
 						/** rellenamos las inconitas ***/
@@ -244,7 +244,7 @@ public class JDBCconnection {
 
 					} else if (pmaquina >= 3) {
 						/** hacemos la consulta donde ponemos a maquina como ganador **/
-						String quaery = "update partidass set ganador = maquina where ID_PARTIDA= ?;";
+						String quaery = "update partidass set ganador = maquina where ID_PARTIDA = ?;";
 						PreparedStatement pstmt = conn.prepareStatement(quaery);
 
 						/*** rellenamos las inconitas ***/
@@ -262,7 +262,7 @@ public class JDBCconnection {
 						 * atualizamos los puntos de la tabla singleplayer para añadir al valor de i un
 						 * punto ya que i tiene el valor del contador del jugador que marca
 						 ***/
-						String quaerys = "update partidass set " + puntuaje + " =? where ID_PARTIDA= ?;";
+						String quaerys = "update partidass set " + puntuaje + " =? where ID_PARTIDA = ?;";
 						PreparedStatement pstmt = conn.prepareStatement(quaerys);
 
 						/***
