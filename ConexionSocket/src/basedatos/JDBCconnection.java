@@ -57,101 +57,110 @@ public class JDBCconnection {
 				/** ejecutamos la consulta y la guardamos **/
 				ResultSet rs = consultap.executeQuery();
 
-				/*** guardamos los puntos de cada jugador en varibales **/
-				int p1 = rs.getInt("puntosj1");
-				int p2 = rs.getInt("puntosj2");
+				/** Aseguramos que hay al menos un resultado ***/
+				if (rs.next()) {
 
-				/**
-				 * si los puntos del jugador que se debe actualizar son el del jugador1 aka el
-				 * parametro que se ha pasado como jugador es j1 el valor de i ahora son los
-				 * puntos que tenia el jugador1
-				 **/
-				if (jugador.equalsIgnoreCase("j1")) {
-					i = p1;
-				} else if (jugador.equalsIgnoreCase("j2")) {
+					/*** guardamos los puntos de cada jugador en varibales **/
+					int p1 = rs.getInt("puntosj1");
+					int p2 = rs.getInt("puntosj2");
+
 					/**
-					 * si los puntos del jugador que se debe actualizar son el del 2 aka el
-					 * parametro jugador es igual a j2 el valor de i ahora son los puntos que tenia
-					 * el jugador2
+					 * si los puntos del jugador que se debe actualizar son el del jugador1 aka el
+					 * parametro que se ha pasado como jugador es j1 el valor de i ahora son los
+					 * puntos que tenia el jugador1
 					 **/
-					i = p2;
-				}
+					if (jugador.equalsIgnoreCase("j1")) {
+						i = p1;
+					} else if (jugador.equalsIgnoreCase("j2")) {
+						/**
+						 * si los puntos del jugador que se debe actualizar son el del 2 aka el
+						 * parametro jugador es igual a j2 el valor de i ahora son los puntos que tenia
+						 * el jugador2
+						 **/
+						i = p2;
+					}
 
-				/** guardamos las id de los jugadores para llamada de otro metodo ***/
-				int j1 = rs.getInt("jugador1");
-				int j2 = rs.getInt("jugador2");
+					/** guardamos las id de los jugadores para llamada de otro metodo ***/
+					int j1 = rs.getInt("jugador1");
+					int j2 = rs.getInt("jugador2");
 
-				/** cerramos la consulta que usamos para obtener todos los datos **/
-				consultap.close();
-				rs.close();
-
-				/***
-				 * si el jugador uno tiene 3 o más puntos le pone como ganador, si el jugador 2
-				 * tiene 3 puntos o más le pone a el de ganador sino sumara un punto al jugador
-				 * que sea que ha marcado (aka el que se actualiza que habiamos indicado con la
-				 * variable puntuaje)
-				 **/
-				if (p1 >= 3) {
+					/** cerramos la consulta que usamos para obtener todos los datos **/
+					consultap.close();
+					rs.close();
 
 					/***
-					 * actualizamos la tabla de partidas multijugador y mediante un inner join
-					 * obtenemos el usuario del jugador ganador y lo ponemos en ganador
+					 * si el jugador uno tiene 3 o más puntos le pone como ganador, si el jugador 2
+					 * tiene 3 puntos o más le pone a el de ganador sino sumara un punto al jugador
+					 * que sea que ha marcado (aka el que se actualiza que habiamos indicado con la
+					 * variable puntuaje)
 					 **/
-					String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR1 LIMIT 1) where ID_PARTIDA=?;";
-					PreparedStatement pstmt = conn.prepareStatement(quaery);
-					pstmt.setInt(1, idpartida);
+					if (p1 >= 3) {
 
-					/*** ejectuamos la consulta ***/
-					pstmt.executeUpdate();
+						/***
+						 * actualizamos la tabla de partidas multijugador y mediante un inner join
+						 * obtenemos el usuario del jugador ganador y lo ponemos en ganador
+						 **/
+						String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR1 LIMIT 1) where ID_PARTIDA= ?;";
+						PreparedStatement pstmt = conn.prepareStatement(quaery);
+						pstmt.setInt(1, idpartida);
 
-					/**
-					 * llamamos a actualizarPerfil pasandole el id del jugador1 para que actualice
-					 * el perfil del jugador1 el indicador que os dira si hay que actualizar en la
-					 * tabla de partidas single-player o multi-player
-					 ***/
-					ActualizarPerfil(j1, indicador);
+						/*** ejectuamos la consulta ***/
+						pstmt.executeUpdate();
 
-					/*** cerramos recursos ***/
-					pstmt.close();
+						/**
+						 * llamamos a actualizarPerfil pasandole el id del jugador1 para que actualice
+						 * el perfil del jugador1 el indicador que os dira si hay que actualizar en la
+						 * tabla de partidas single-player o multi-player
+						 ***/
+						ActualizarPerfil(j1, indicador);
 
-				} else if (p2 >= 3) {
-					/***
-					 * actualizamos la tabla de partidas multijugador y mediante un inner join
-					 * obtenemos el usuario del jugador ganador y lo ponemos en ganador
-					 **/
-					String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR2 LIMIT 1) where ID_PARTIDA=?;";
-					PreparedStatement pstmt = conn.prepareStatement(quaery);
-					pstmt.setInt(1, idpartida);
-					/*** ejectuamos la consulta ***/
-					pstmt.executeUpdate();
-					/**
-					 * llamamos a actualizarPerfil pasandole el id del jugador2 para que actualice
-					 * el perfil del jugador2 y el indicador que os dira si hay que actualizar en la
-					 * tabla de partidas single-player o multi-player
-					 ***/
-					ActualizarPerfil(j2, indicador);
-					/*** cerramos recursos ***/
-					pstmt.close();
+						/*** cerramos recursos ***/
+						pstmt.close();
+
+					} else if (p2 >= 3) {
+						/***
+						 * actualizamos la tabla de partidas multijugador y mediante un inner join
+						 * obtenemos el usuario del jugador ganador y lo ponemos en ganador
+						 **/
+						String quaery = "UPDATE partidasm SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASM.JUGADOR2 LIMIT 1) where ID_PARTIDA= ?;";
+						PreparedStatement pstmt = conn.prepareStatement(quaery);
+						pstmt.setInt(1, idpartida);
+						/*** ejectuamos la consulta ***/
+						pstmt.executeUpdate();
+						/**
+						 * llamamos a actualizarPerfil pasandole el id del jugador2 para que actualice
+						 * el perfil del jugador2 y el indicador que os dira si hay que actualizar en la
+						 * tabla de partidas single-player o multi-player
+						 ***/
+						ActualizarPerfil(j2, indicador);
+						/*** cerramos recursos ***/
+						pstmt.close();
+					} else {
+
+						/***
+						 * hacdemos la consulta donde le sumamos a i(el contador de puntos del que ha
+						 * marcado) uno más
+						 ***/
+						String quaery = "update partidasm set " + puntuaje + "=? where ID_PARTIDA= ?;";
+						PreparedStatement pstmt = conn.prepareStatement(quaery);
+						
+						/** le ponemos el valor de las inconitas ***/
+						pstmt.setInt(1, (i + 1));
+						pstmt.setInt(2, idpartida);
+
+						
+						/** ejecutamos la consulta ***/
+						pstmt.executeUpdate();
+
+						/*** cerramos recursos ****/
+						pstmt.close();
+					}
 				} else {
-
-					/***
-					 * hacdemos la consulta donde le sumamos a i(el contador de puntos del que ha
-					 * marcado) uno más
-					 ***/
-					String quaery = "update partidasm set ? =" + (i + 1) + "where ID_PARTIDA=?;";
-					PreparedStatement pstmt = conn.prepareStatement(quaery);
-					/** le ponemos el valor de las inconnitas ***/
-					pstmt.setString(1, puntuaje);
-					pstmt.setInt(2, idpartida);
-
-					/** ejecutamos la consulta ***/
-					pstmt.executeUpdate();
-
-					/*** cerramos recursos ****/
-					pstmt.close();
+					/**** Si no hay resultados, manejamos el caso ***/
+					System.out.println("No se encontró la partida con id: " + idpartida);
 				}
-			}catch(Exception e) {
-				/***en caso de que algo vaya mal nos imprime el error****/
+			} catch (Exception e) {
+				/*** en caso de que algo vaya mal nos imprime el error ****/
 				e.printStackTrace();
 			}
 
@@ -175,98 +184,107 @@ public class JDBCconnection {
 				/*** ejecutamos las consultas y guardamos el resultado ***/
 				ResultSet rs = consultap.executeQuery();
 
-				/***
-				 * guardamos los puntos que tenia ya el jugador antes de actualizar y lo mismo
-				 * con los puntos de la maquina
-				 ***/
-				int p1 = rs.getInt("PUNTOSJ1");
-				int pmaquina = rs.getInt("PUNTOSMAQUINA");
-
-				/***
-				 * Si el parametro por pantalla jugador es igual a j1 i tomara el valor de los
-				 * puntos del jugador1, pero si jugador= maquina i tomara el valor del contador
-				 * de los puntos de la maquina
-				 ***/
-				if (jugador.equalsIgnoreCase("j1")) {
-					i = p1;
-				} else if (jugador.equalsIgnoreCase("maquina")) {
-					i = pmaquina;
-				}
-
-				/** conseguimos la id para llamada de otro metodo ***/
-				int j1 = rs.getInt("jugador1");
-				/***
-				 * cerramos recursos de esa primera consulta donde hemos obtenidos los datos de
-				 * los contadores y id
-				 ***/
-				rs.close();
-
-				/***
-				 * si el jugador uno tiene 3 o más le pone como ganador, si la maquina tiene 3 o
-				 * más le pone a el de ganador sino sumara un punto al jugador que sea que ha
-				 * marcado
-				 **/
-
-				if (p1 >= 3) {
-
-					/**
-					 * actualizamos la tabla de partidas single-player y ponemos al jugador1 como
-					 * ganador
+				/** Aseguramos que hay al menos un resultado **/
+				if (rs.next()) {
+					/***
+					 * guardamos los puntos que tenia ya el jugador antes de actualizar y lo mismo
+					 * con los puntos de la maquina
 					 ***/
-					String quaery = "UPDATE partidass SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASS.JUGADOR1 LIMIT 1) where ID_PARTIDA=?;";
-					PreparedStatement pstmt = conn.prepareStatement(quaery);
-
-					/** rellenamos las inconitas ***/
-					pstmt.setInt(1, idpartida);
-
-					/*** ejecutamos la consulta ***/
-					pstmt.executeUpdate();
+					int p1 = rs.getInt("PUNTOSJ1");
+					int pmaquina = rs.getInt("PUNTOSMAQUINA");
 
 					/***
-					 * llamamos al metodo de actualizar perfil pasandole la id del jugador 1 y el
-					 * indicador de si debe ser en la tabla de single player o multiplayer
+					 * Si el parametro por pantalla jugador es igual a j1 i tomara el valor de los
+					 * puntos del jugador1, pero si jugador= maquina i tomara el valor del contador
+					 * de los puntos de la maquina
 					 ***/
-					ActualizarPerfil(j1, indicador);
+					if (jugador.equalsIgnoreCase("j1")) {
+						i = p1;
+					} else if (jugador.equalsIgnoreCase("maquina")) {
+						i = pmaquina;
+					}
 
-					/*** cerramos recursos ***/
-					pstmt.close();
+					/** conseguimos la id para llamada de otro metodo ***/
+					int j1 = rs.getInt("jugador1");
+					/***
+					 * cerramos recursos de esa primera consulta donde hemos obtenidos los datos de
+					 * los contadores y id
+					 ***/
+					rs.close();
 
-				} else if (pmaquina >= 3) {
-					/** hacemos la consulta donde ponemos a maquina como ganador **/
-					String quaery = "update partidass set ganador = 'maquina' where ID_PARTIDA=?;";
-					PreparedStatement pstmt = conn.prepareStatement(quaery);
+					/***
+					 * si el jugador uno tiene 3 o más le pone como ganador, si la maquina tiene 3 o
+					 * más le pone a el de ganador sino sumara un punto al jugador que sea que ha
+					 * marcado
+					 **/
 
-					/*** rellenamos las inconitas ***/
-					pstmt.setInt(1, idpartida);
-					/*** ejecutamos la consulta **/
-					pstmt.executeUpdate();
-					/*** cerramos recursos ***/
-					pstmt.close();
+					if (p1 >= 3) {
 
+						/**
+						 * actualizamos la tabla de partidas single-player y ponemos al jugador1 como
+						 * ganador
+						 ***/
+						String quaery = "UPDATE partidass SET GANADOR = (SELECT usuarios FROM JUGADORES WHERE JUGADORES.id = PARTIDASS.JUGADOR1 LIMIT 1) where ID_PARTIDA= ?;";
+						PreparedStatement pstmt = conn.prepareStatement(quaery);
+
+						/** rellenamos las inconitas ***/
+						pstmt.setInt(1, idpartida);
+
+						/*** ejecutamos la consulta ***/
+						pstmt.executeUpdate();
+
+						/***
+						 * llamamos al metodo de actualizar perfil pasandole la id del jugador 1 y el
+						 * indicador de si debe ser en la tabla de single player o multiplayer
+						 ***/
+						ActualizarPerfil(j1, indicador);
+
+						/*** cerramos recursos ***/
+						pstmt.close();
+
+					} else if (pmaquina >= 3) {
+						/** hacemos la consulta donde ponemos a maquina como ganador **/
+						String quaery = "update partidass set ganador = maquina where ID_PARTIDA= ?;";
+						PreparedStatement pstmt = conn.prepareStatement(quaery);
+
+						/*** rellenamos las inconitas ***/
+						pstmt.setInt(1, idpartida);
+						
+						
+						/*** ejecutamos la consulta **/
+						pstmt.executeUpdate();
+						/*** cerramos recursos ***/
+						pstmt.close();
+
+					} else {
+
+						/**
+						 * atualizamos los puntos de la tabla singleplayer para añadir al valor de i un
+						 * punto ya que i tiene el valor del contador del jugador que marca
+						 ***/
+						String quaerys = "update partidass set " + puntuaje + " =? where ID_PARTIDA= ?;";
+						PreparedStatement pstmt = conn.prepareStatement(quaerys);
+
+						/***
+						 * rellenamos las inconitas con puntuaje que indica que jugador ha marcado y
+						 * idpartida que su nombre indica que es
+						 ***/
+
+						pstmt.setInt(1, (i + 1));
+						pstmt.setInt(2, idpartida);
+
+						/*** ejecutamos las consultas ***/
+						pstmt.executeUpdate();
+
+						/*** cerramos recursos ***/
+						pstmt.close();
+					}
 				} else {
-
-					/**
-					 * atualizamos los puntos de la tabla singleplayer para añadir al valor de i un
-					 * punto ya que i tiene el valor del contador del jugador que marca
-					 ***/
-					String quaerys = "update partidass set ? =" + (i + 1) + "where ID_PARTIDA=?;";
-					PreparedStatement pstmt = conn.prepareStatement(quaerys);
-
-					/***
-					 * rellenamos las inconitas con puntuaje que indica que jugador ha marcado y
-					 * idpartida que su nombre indica que es
-					 ***/
-					pstmt.setString(1, puntuaje);
-					pstmt.setInt(2, idpartida);
-
-					/*** ejecutamos las consultas ***/
-					pstmt.executeUpdate();
-
-					/*** cerramos recursos ***/
-					pstmt.close();
+					/**** Si no hay resultados, manejamos el caso ***/
+					System.out.println("No se encontró la partida con id: " + idpartida);
 				}
-			}catch(Exception e) {
-				/***en caso de que algo vaya mal nos imprime el error****/
+			} catch (Exception e) {
+				/*** en caso de que algo vaya mal nos imprime el error ****/
 				e.printStackTrace();
 			}
 			break;
@@ -290,63 +308,77 @@ public class JDBCconnection {
 			ResultSet rs = pstmt.executeQuery();
 
 			/***
-			 * en dos variables guardamos los contadores de todas las veces que ha ganado en
-			 * partidas multijugador y en partidas single-player aka contra la maquina
+			 * Verificamos si se encontró un resultado antes de acceder a las columnas
 			 ***/
-			int partidasGanadasmulti = rs.getInt("PG_multijugador");
-			int partidasGanadasmaquina = rs.getInt("PG_multijugador");
-
-			/*** cerramos recursos ***/
-			pstmt.close();
-
-			/**
-			 * segun el indicador modificaremos el contador de ganadas de multiplayer(1) o
-			 * singleplayer(2)
-			 **/
-			switch (indicador) {
-			case 1:
+			if (rs.next()) {
 				/***
-				 * actualizamos el campo de partidas ganadas de multijugador sumandole 1 a la
-				 * variable donde habiamos almacenado el contador de ganadas multijugador antes
-				 * de modificacion segun su id
-				 ****/
-				String quaeryactualizarpartidasmulti = "update JUGADORES set PG_multijugador ="
-						+ (partidasGanadasmulti + 1) + "where id = ?";
-				PreparedStatement pstmt2 = conn.prepareStatement(quaeryactualizarpartidasmulti);
-
-				/*** rellenamos inconitas ***/
-				pstmt2.setInt(1, id_jugador);
-
-				/**** ejecutamos la consulta ****/
-				pstmt2.executeUpdate();
-
-				/*** cerramos recursos **/
-				pstmt2.close();
-				break;
-
-			case 2:
-				/***
-				 * si indicador dice que 2 hay que actualizar los partidas ganadas contra la
-				 * maquina donde simplemente le sumaos al contador de partidas ganadas contra la
-				 * maquina +1
-				 ****/
-				String quaeryactualizarpartidasmaquina = "update JUGADORES set PG_maquina ="
-						+ (partidasGanadasmaquina + 1) + "where id = ?";
-				PreparedStatement pstmt3 = conn.prepareStatement(quaeryactualizarpartidasmaquina);
-
-				/*** rellenamos inconitas ****/
-				pstmt3.setInt(1, id_jugador);
-
-				/*** ejeutamos la consulta ***/
-				pstmt3.executeUpdate();
+				 * en dos variables guardamos los contadores de todas las veces que ha ganado en
+				 * partidas multijugador y en partidas single-player aka contra la maquina
+				 ***/
+				int partidasGanadasmulti = rs.getInt("PG_multijugador");
+				int partidasGanadasmaquina = rs.getInt("PG_maquina");
 
 				/*** cerramos recursos ***/
-				pstmt3.close();
-				break;
+				pstmt.close();
+
+				/**
+				 * segun el indicador modificaremos el contador de ganadas de multiplayer(1) o
+				 * singleplayer(2)
+				 **/
+				switch (indicador) {
+				case 1:
+					/***
+					 * actualizamos el campo de partidas ganadas de multijugador sumandole 1 a la
+					 * variable donde habiamos almacenado el contador de ganadas multijugador antes
+					 * de modificacion segun su id
+					 ****/
+					String quaeryactualizarpartidasmulti = "update JUGADORES set PG_multijugador = ? where id = ?";
+					try (PreparedStatement pstmt2 = conn.prepareStatement(quaeryactualizarpartidasmulti)) {
+
+						pstmt2.setInt(1, partidasGanadasmulti + 1);
+						/*** rellenamos inconitas ***/
+						pstmt2.setInt(2, id_jugador);
+
+						/**** ejecutamos la consulta ****/
+						pstmt2.executeUpdate();
+
+						/*** cerramos recursos **/
+						pstmt2.close();
+					}
+					break;
+
+				case 2:
+					/***
+					 * si indicador dice que 2 hay que actualizar los partidas ganadas contra la
+					 * maquina donde simplemente le sumaos al contador de partidas ganadas contra la
+					 * maquina +1
+					 ****/
+					String quaeryactualizarpartidasmaquina = "update JUGADORES set PG_maquina = ? where id = ?";
+					try (PreparedStatement pstmt3 = conn.prepareStatement(quaeryactualizarpartidasmaquina)) {
+
+						/*** rellenamos inconitas ****/
+						pstmt3.setInt(1, partidasGanadasmaquina + 1);
+						pstmt3.setInt(2, id_jugador);
+
+						/*** ejeutamos la consulta ***/
+						pstmt3.executeUpdate();
+
+						/*** cerramos recursos ***/
+						pstmt3.close();
+					}
+					break;
+				default:
+					System.out.println("Indicador no válido.");
+					/** cerramos switch **/
+				}
+
+			} else {
+				/** Si no hay resultados, no se puede actualizar **/
+				System.out.println("No se encontraron datos para el jugador con ID: " + id_jugador);
 			}
-			/** cerramos switch **/
-		}catch(Exception e) {
-			/***en caso de que algo vaya mal nos imprime el error****/
+
+		} catch (Exception e) {
+			/*** en caso de que algo vaya mal nos imprime el error ****/
 			e.printStackTrace();
 		}
 	}
@@ -376,8 +408,8 @@ public class JDBCconnection {
 								rs.getString("contraseña"), rs.getInt("PG_multijugador"), rs.getInt("PG_maquina")));
 			}
 
-		}catch(Exception e) {
-			/***en caso de que algo vaya mal nos imprime el error****/
+		} catch (Exception e) {
+			/*** en caso de que algo vaya mal nos imprime el error ****/
 			e.printStackTrace();
 		}
 	}
@@ -417,8 +449,8 @@ public class JDBCconnection {
 									rs.getInt("PUNTOSJ2"), rs.getString("GANADOR"), rs.getDate("FECHA")));
 				}
 
-			}catch(Exception e) {
-				/***en caso de que algo vaya mal nos imprime el error****/
+			} catch (Exception e) {
+				/*** en caso de que algo vaya mal nos imprime el error ****/
 				e.printStackTrace();
 			}
 			break;
@@ -448,8 +480,8 @@ public class JDBCconnection {
 							rs.getInt("PUNTOSMAQUINA"), rs.getString("GANADOR"), rs.getDate("FECHA")));
 				}
 
-			}catch(Exception e) {
-				/***en caso de que algo vaya mal nos imprime el error****/
+			} catch (Exception e) {
+				/*** en caso de que algo vaya mal nos imprime el error ****/
 				e.printStackTrace();
 			}
 			break;
@@ -463,7 +495,7 @@ public class JDBCconnection {
 		 * necesitamos meterle los datos de usuario y contraseña y le inicializamos lo
 		 * demas a 0 para evitar posibles errores de compilación
 		 ***/
-		String quaery = "insert into JUGADORES (USUARIOS,CONTRASEÑA,PG_multijugador,PG_maquina) VALUES ('?','?',0,0);";
+		String quaery = "insert into JUGADORES (USUARIOS,CONTRASEÑA,PG_multijugador,PG_maquina) VALUES (?,?,0,0);";
 		/*** hacemos la conexion con la base de datos **/
 		try (Connection conn = DriverManager.getConnection(url, user, password);) {
 			PreparedStatement pstmt = conn.prepareStatement(quaery);
@@ -472,8 +504,8 @@ public class JDBCconnection {
 			/*** ejecutamos la consulta ***/
 			pstmt.executeUpdate();
 
-		}catch(Exception e) {
-			/***en caso de que algo vaya mal nos imprime el error****/
+		} catch (Exception e) {
+			/*** en caso de que algo vaya mal nos imprime el error ****/
 			e.printStackTrace();
 		}
 	}
@@ -484,94 +516,89 @@ public class JDBCconnection {
 		 * preparamos ua consulta en la que por el campo del usuario vamos a obtener las
 		 * id de cada jugador
 		 ***/
-		String obtenerid = "select j1.id,j2.id from jugadores as j1 inner join jugadores as j2 on j2.usuarios like '?' where j1.USUARIOS like '?';";
+		String obtenerid = "select j1.id as j1id,j2.id as j2id from jugadores as j1 inner join jugadores as j2 on j2.usuarios like ? where j1.USUARIOS like ?;";
 
 		/*** hacemos la conexion ***/
 		try (Connection conn = DriverManager.getConnection(url, user, password);) {
 
 			/** hacemos el statement y rellenamos las inconitas ***/
 			PreparedStatement pstmt = conn.prepareStatement(obtenerid);
-			pstmt.setString(1, nombre2);
-			pstmt.setString(2, nombre1);
+			pstmt.setString(1, "%" + nombre2 + "%");
+			pstmt.setString(2, "%" + nombre1 + "%");
 
 			/*** ejecutamos la consulta y almacenamos su resultado en un resulset ***/
 			ResultSet rs = pstmt.executeQuery();
 
-			/**** guardamos los valores de la id de cada jugador ****/
-			int id1 = rs.getInt("j1id");
-			int id2 = rs.getInt("j2id");
+			/***
+			 * Verificamos si se encontró un resultado antes de acceder a las columnas
+			 ***/
+			if (rs.next()) {
+				/**** guardamos los valores de la id de cada jugador ****/
+				int id1 = rs.getInt("j1id");
+				int id2 = rs.getInt("j2id");
 
-			/*** cerramos los recursos ***/
-			pstmt.close();
-			rs.close();
+				/*** cerramos los recursos ***/
+				pstmt.close();
+				rs.close();
 
-			/****
-			 * segun si debe crear una partida en multiplayer(1) o singleplayer(2) te hace
-			 * casos diferentes que esto se indica cual mediante el indicador
-			 *****/
-			switch (indicador) {
-			case 1:
+				/****
+				 * segun si debe crear una partida en multiplayer(1) o singleplayer(2) te hace
+				 * casos diferentes que esto se indica cual mediante el indicador
+				 *****/
+				switch (indicador) {
+				case 1:
 
-				/*** obtenemos la fecha del sistema de cuando se llama el metodo ***/
-				LocalDate fechaHoy = LocalDate.now();
+					/*** obtenemos la fecha del sistema de cuando se llama el metodo ***/
+					LocalDate fechaHoy = LocalDate.now();
 
-				/***
-				 * Convertimos el LocalDate en un LocalDateTime con la hora fijada a las
-				 * 00:00:00 (inicio del día) en la zona horaria predeterminada del sistema.
-				 * luego Convierto con el instant el LocalDateTime a un Instant, y luego ya de
-				 * este a un date
-				 ***/
-				Date date = (Date) Date.from(fechaHoy.atStartOfDay(ZoneId.systemDefault()).toInstant());
+					java.sql.Date sqlDate = java.sql.Date.valueOf(fechaHoy); // Convertimos a java.sql.Date
 
-				/** preparamos la queray de creación de la partida de multijugador ****/
-				String quaery1 = "insert into partidasm (JUGADOR1,JUGADOR2,PUNTOSJ1,PUNTOSJ2,FECHA) VALUES (?,?,0,0,?);";
+					/** preparamos la queray de creación de la partida de multijugador ****/
+					String quaery1 = "insert into partidasm (JUGADOR1,JUGADOR2,PUNTOSJ1,PUNTOSJ2,FECHA) VALUES (?,?,0,0,?);";
 
-				PreparedStatement pstmt1 = conn.prepareStatement(quaery1);
+					PreparedStatement pstmt1 = conn.prepareStatement(quaery1);
 
-				/*** rellenamos las inconitas ***/
-				pstmt1.setInt(1, id1);
-				pstmt1.setInt(2, id2);
-				pstmt1.setDate(3, date);
+					/*** rellenamos las inconitas ***/
+					pstmt1.setInt(1, id1);
+					pstmt1.setInt(2, id2);
+					pstmt1.setDate(3, sqlDate);
 
-				/** ejecutamos la consulta de creacion de partida multijugador **/
-				pstmt1.executeUpdate();
+					/** ejecutamos la consulta de creacion de partida multijugador **/
+					pstmt1.executeUpdate();
 
-				/*** cerramos recursos ****/
-				pstmt1.close();
+					/*** cerramos recursos ****/
+					pstmt1.close();
 
-				break;
+					break;
 
-			case 2:
-				/*** obtenemos la fecha del sistema de cuando se llama el metodo ***/
-				LocalDate fechaHoy2 = LocalDate.now();
+				case 2:
+					/*** obtenemos la fecha del sistema de cuando se llama el metodo ***/
+					LocalDate fechaHoy2 = LocalDate.now();
 
-				/***
-				 * Convertimos el LocalDate en un LocalDateTime con la hora fijada a las
-				 * 00:00:00 (inicio del día) en la zona horaria predeterminada del sistema.
-				 * luego Convierto con el instant el LocalDateTime a un Instant, y luego ya de
-				 * este a un date
-				 ***/
-				Date date2 = (Date) Date.from(fechaHoy2.atStartOfDay(ZoneId.systemDefault()).toInstant());
+					java.sql.Date sqlDate2 = java.sql.Date.valueOf(fechaHoy2); // Convertimos a java.sql.Date
 
-				/** preparamos la queray de creación de la partida de singleplayer****/
-				String quaery2 = "insert into partidass (JUGADOR1,PUNTOSJ1,PUNTOSMAQUINA,FECHA) VALUES (?,0,0,?);";
+					/** preparamos la queray de creación de la partida de singleplayer ****/
+					String quaery2 = "insert into partidass (JUGADOR1,PUNTOSJ1,PUNTOSMAQUINA,FECHA) VALUES (?,0,0,?);";
 
-				PreparedStatement pstmt2 = conn.prepareStatement(quaery2);
+					PreparedStatement pstmt2 = conn.prepareStatement(quaery2);
 
-				/*** rellenamos las inconitas ***/
-				pstmt2.setInt(1, id1);
-				pstmt2.setDate(2, date2);
+					/*** rellenamos las inconitas ***/
+					pstmt2.setInt(1, id1);
+					pstmt2.setDate(2, sqlDate2);
 
-				/** ejecutamos la consulta de creacion de partida multijugador **/
-				pstmt2.executeUpdate();
+					/** ejecutamos la consulta de creacion de partida multijugador **/
+					pstmt2.executeUpdate();
 
-				/*** cerramos recursos ****/
-				pstmt2.close();
-				break;
+					/*** cerramos recursos ****/
+					pstmt2.close();
+					break;
+				}
+			} else {
+				/*** si los nombres no encuentran nos informa del error ***/
+				System.out.println("No se encontraron jugadores con los nombres proporcionados.");
 			}
-
-		}catch(Exception e) {
-			/***en caso de que algo vaya mal nos imprime el error****/
+		} catch (Exception e) {
+			/*** en caso de que algo vaya mal nos imprime el error ****/
 			e.printStackTrace();
 		}
 	}
