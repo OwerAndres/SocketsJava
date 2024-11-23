@@ -203,10 +203,6 @@ public class JDBCconnection {
 						i = p2;
 					}
 
-					/**
-					 * guardamos las id de los jugadores para llamada de otro metodo int j1 =
-					 * rs.getInt("jugador1"); int j2 = rs.getInt("jugador2");
-					 ****/
 					
 					/** cerramos la consulta que usamos para obtener todos los datos **/
 					consultap.close();
