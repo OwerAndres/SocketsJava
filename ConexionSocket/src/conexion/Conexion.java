@@ -2,6 +2,7 @@ package conexion;
 
 import java.io.*;
 import java.net.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class Conexion {
 	private static final int PORT = 5555;
 	private static final int NUM_CLIENTES = 2;
 
-	public void iniciarServidor() {
+	public void iniciarServidor() throws SQLException {
 		/**Se crea un array de cleintes en el cual se almacenaran los clientes para poder manejar la cantidadz de jugadores 
 		 * que se conectaran en el servidor, en este caso 2 jugadores, por lo cual hasta que el array no tenga dos elementos 
 		 * el servidor seguira esperando jugadores**/
@@ -47,6 +48,8 @@ public class Conexion {
 				int contador = 0;
 				boolean authC2 = false;
 				boolean authC1 = false;
+				String usuario1 = "";
+				String usuario2 = "";
 
 				/**Bucle el cual siempre se estara ejecutnado hasta que los dos clientes no esten verificados, dicha verificacion es la que hace cuando inician
 				 * sesion despues de haberse registrado en base de datos, el bucle seguira esperando o manteniendo a la espera de la respuesta en el servidor 
@@ -72,6 +75,7 @@ public class Conexion {
 								/**llamamos al metodo de proceso del registro el cual recorrera la respuesta del cleinte mandada al servidor, en la cual recogeremos sus 
 								 * datos y los enviaremos a la base de datos mediante los metodos de la clase JDBCconnection**/
 								procesarRegistro(registroSQL1);
+								usuario1 = procesarRegistro2(registroSQL1);
 								System.out.println("Cliente 1 registrado correctamente.");
 								writer1.println("Registro completado exitosamente.");
 							} catch (Exception e) {
@@ -123,6 +127,7 @@ public class Conexion {
 								/**llamamos al metodo de proceso del registro el cual recorrera la respuesta del cleinte mandada al servidor, en la cual recogeremos sus 
 								 * datos y los enviaremos a la base de datos mediante los metodos de la clase JDBCconnection**/
 								procesarRegistro(registroSQL2);
+								usuario2 = procesarRegistro2(registroSQL2);
 								System.out.println("Cliente 2 registrado correctamente.");
 								writer2.println("Registro completado exitosamente.");
 							} catch (Exception e) {
@@ -145,6 +150,9 @@ public class Conexion {
 									System.out.println("Error en la autenticación de cliente 2.");
 									writer2.println("Autenticación fallida.");
 								}
+								
+								
+				
 							} catch (Exception e) {
 								System.out.println("Error al autenticar cliente 2: " + e.getMessage());
 								writer2.println("Error en el inicio de sesión.");
@@ -163,6 +171,15 @@ public class Conexion {
 				}else {
 					writer1.print("");
 					writer2.print("");
+				}
+
+				if(authC1 && authC2) {
+					try {
+						int indicador = 1;
+						JDBCconnection.CrearPartida(indicador, usuario1, usuario2);
+					} catch (Exception e) {
+						System.out.println("Error en crear la partida: " + e.getMessage());
+					}
 				}
 
 				/**Despues de que los dos cleintes esten verificados, se activa la logica del juego**/
@@ -189,7 +206,7 @@ public class Conexion {
 						}
 
 					}
-					if (contador == 3) {
+					if (contador >= 3) {
 						metodos.ganador();
 					}
 				} else {
@@ -222,6 +239,44 @@ public class Conexion {
 
 			/**Enviamos los valores a la bas e de datos para crear el jugador**/
 			JDBCconnection.CrearUsuario(usuario, contraseña);
+		} else {
+			throw new IllegalArgumentException("Formato de mensaje incorrecto para registro.");
+		}
+	}
+	
+	private String procesarRegistro2(String mensaje) throws Exception {
+		int indexValues = mensaje.indexOf("VALUES");
+		if (indexValues != -1) {
+			/**Se extraen y se limpial los valores de la respuesta del cleinte hacia el servidor**/
+			String parts = mensaje.substring(indexValues + 7).trim();
+			/**Quitamos los paretensis**/
+			parts = parts.substring(1, parts.length() - 1);
+			/**Separamos los valores para posteriromente guardarlos en euna variable**/
+			String[] values = parts.split(", ");
+			String usuario = values[0].replace("'", "").trim();
+
+
+			/**Enviamos el noimbre dle usuario**/
+			return usuario;
+		} else {
+			throw new IllegalArgumentException("Formato de mensaje incorrecto para registro.");
+		}
+	}
+	
+	public String Usuarios(String mensaje) throws Exception {
+		int indexValues = mensaje.indexOf("VALUES");
+		if (indexValues != -1) {
+			/**Se extraen y se limpial los valores de la respuesta del cleinte hacia el servidor**/
+			String parts = mensaje.substring(indexValues + 7).trim();
+			/**Quitamos los paretensis**/
+			parts = parts.substring(1, parts.length() - 1);
+			/**Separamos los valores para posteriromente guardarlos en euna variable**/
+			String[] values = parts.split(", ");
+			String nomUsuario = values[0].replace("'", "").trim();
+
+
+			/**Enviamos el noimbre dle usuario**/
+			return nomUsuario;
 		} else {
 			throw new IllegalArgumentException("Formato de mensaje incorrecto para registro.");
 		}

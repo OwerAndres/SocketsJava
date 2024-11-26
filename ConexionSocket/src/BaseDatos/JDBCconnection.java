@@ -111,7 +111,7 @@ public class JDBCconnection {
 				break;
 			case 2:
 
-				/*** preparamos la consulta y rellebamos las inconitas ****/
+				/*** preparamos la consulta y rellenamos las incognitas ****/
 				String idpartiss = "Select ID_PARTIDA FROM partidass where JUGADOR1 like ?";
 
 				PreparedStatement consultapartis = conn.prepareStatement(idpartiss);

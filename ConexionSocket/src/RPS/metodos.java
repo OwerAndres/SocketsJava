@@ -1,42 +1,60 @@
 package RPS;
 
+import java.sql.SQLException;
+
 import javax.swing.JOptionPane;
 
-public class metodos {
+import BaseDatos.JDBCconnection;
+import conexion.Conexion;
 
-	public static int logica(int take1, int take2) {
-		// 0 = piedra --- 1 = papel --- 2 = tijera
-		if (take1 == take2) {
-			return 0; // empate
-		} else {
-			switch (take1) {
-			case 0:
-				if (take2 == 1) {
-					return 2; // gana J2
-				} else if (take2 == 2) {
-					return 1; // gana J1
-				}
-				break;
-			case 1:
-				if (take2 == 0) {
-					return 1; // gana J1
-				} else if (take2 == 2) {
-					return 2; // gana J2
-				}
-				break;
-			case 2:
-				if (take2 == 0) {
-					return 2; // gana J2
-				} else if (take2 == 1) {
-					return 1; // gana J1
-				}
-				break;
-			default:
-				break;
-			}
-		}
-		return 0;
-	}
+public class metodos {
+	
+	 private static String nomJ1 = "adrian"; // Nombre de jugador 1
+	    private static String nomJ2 = "angel"; // Nombre de jugador 2
+
+	    // Método de lógica del juego
+	    public static int logica(int take1, int take2) throws SQLException {
+	        // 0 = piedra --- 1 = papel --- 2 = tijera
+	        if (take1 == take2) {
+	            return 0; // empate
+	        } else {
+	            switch (take1) {
+	                case 0: // J1 elige piedra
+	                    if (take2 == 1) { // J2 elige papel
+	                        JDBCconnection.actualizarPuntos(1, "J2", nomJ1, nomJ2);
+	                        return 2; // gana J2
+	                    } else if (take2 == 2) { // J2 elige tijera
+	                        JDBCconnection.actualizarPuntos(1, "J1", nomJ1, nomJ2);
+	                        return 1; // gana J1
+	                    }
+	                    break;
+
+	                case 1: // J1 elige papel
+	                    if (take2 == 0) { // J2 elige piedra
+	                        JDBCconnection.actualizarPuntos(1, "J1", nomJ1, nomJ2);
+	                        return 1; // gana J1
+	                    } else if (take2 == 2) { // J2 elige tijera
+	                        JDBCconnection.actualizarPuntos(1, "J2", nomJ1, nomJ2);
+	                        return 2; // gana J2
+	                    }
+	                    break;
+
+	                case 2: // J1 elige tijera
+	                    if (take2 == 0) { // J2 elige piedra
+	                        JDBCconnection.actualizarPuntos(1, "J2", nomJ1, nomJ2);
+	                        return 2; // gana J2
+	                    } else if (take2 == 1) { // J2 elige papel
+	                        JDBCconnection.actualizarPuntos(1, "J1", nomJ1, nomJ2);
+	                        return 1; // gana J1
+	                    }
+	                    break;
+
+	                default:
+	                    break;
+	            }
+	        }
+	        return 0;
+	    }
 
 //	public static int choose() {
 //		String plays[] = { "Piedra", "Papel", "Tijera" };
@@ -86,7 +104,7 @@ public class metodos {
 	private static int points1 = 0; 
 	private static int points2 = 0;
 
-	public static void game(int ply1, int ply2) {
+	public static void game(int ply1, int ply2) throws SQLException {
 	    int played1, played2;
 	    String plays[] = { "Piedra", "Papel", "Tijera" };
 
@@ -116,8 +134,10 @@ public class metodos {
 	}
 
 
-//	public static void main(String[] args) {
-//		game();
+//	public static void main(String[] args) throws SQLException {
+//		JDBCconnection.actualizarPuntos(1, "J1", "ower", "maria");
+//		System.out.println(nomJ1);
+//		System.out.println(nomJ2);
 //	}
 
 }

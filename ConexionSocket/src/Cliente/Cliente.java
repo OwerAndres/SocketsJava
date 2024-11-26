@@ -24,7 +24,7 @@ public class Cliente {
 
 			// Establece la conexión con el servidor en la IP y puerto especificados
 
-			socket = new Socket("172.16.40.203", 5555);
+			socket = new Socket("172.16.40.96", 5555);
 
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream())); // Para leer datos del servidor
 
